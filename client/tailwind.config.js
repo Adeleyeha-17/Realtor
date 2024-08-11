@@ -17,7 +17,14 @@ module.exports = {
       },
     },
     extend: {
+      backgroundColor: {
+        navbar: "var(--navbar)"
+      },
       colors: {
+        link: "var(--link)",
+        primary_head: "var(--primary-head)",
+        secondary_head: "var(--secondary-head)",
+        paragraph: "var(--paragraph)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
