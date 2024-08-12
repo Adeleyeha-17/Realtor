@@ -18,7 +18,8 @@ module.exports = {
     },
     extend: {
       backgroundColor: {
-        navbar: "var(--navbar)"
+        navbar: "var(--navbar)",
+        primary: "var(--primary-head)",
       },
       colors: {
         link: "var(--link)",
