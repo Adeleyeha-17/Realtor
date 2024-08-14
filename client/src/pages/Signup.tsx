@@ -3,9 +3,68 @@ import {ArrowLeft, ArrowRight} from "lucide-react";
 import {Link} from "react-router-dom";
 import Lottie from "lottie-react"
 import { Arrow, House } from "../assets/index"
+import { FormEvent, useState } from "react";
 
 
 export default function Signup() {
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: ""
+    })
+    const [ error, setError ] = useState<string | null>(null)
+    const [ loading, setLoading ] = useState(false)
+
+    const { username, email, password } = formData 
+
+    const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value } = e.target
+        setFormData(prevFormData => {
+            return {
+                ...prevFormData,
+                [name] : value
+            }
+        })
+    }
+    
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!username || !email || !password) {
+            setError("Please fill out all fields.");
+            return;
+        }
+        
+        try {
+            setLoading(true)
+            setError(null)
+
+            const res = await fetch('/api/auth/signup', 
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                }
+            )
+
+            const data = await res.json()
+
+            if(data.error) {
+                setError(data.message)
+            }else{
+                setError(null)
+                setFormData({ username: "", email: "", password: "" });
+            }
+            
+        } catch (err) {
+            const errorMessage = (err as Error).message;
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="w-full flex max-h-screen">
@@ -30,26 +89,27 @@ export default function Signup() {
                 </div>
 
 
-                <form className="flex flex-col gap-3">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                {error && <p className="text-red-600">{error}</p>}
                     <input
                         type="text"
                         placeholder="Username"
                         className="border p-3 rounded-lg outline-none"
-                        id="username"/>
+                        name="username" value={username} onChange={handleChange}/>
                     <input
                         type="email"
                         placeholder="Email"
                         className="border p-3 rounded-lg outline-none"
-                        id="email"/>
+                        name="email" value={email} onChange={handleChange}/>
                     <input
                         type="password"
                         placeholder="Password"
                         className="border p-3 rounded-lg outline-none"
-                        id="password"/>
+                        name="password" value={password} onChange={handleChange}/>
 
-                    <Button
+                    <Button disabled={loading}
                         variant={"cta"}
-                        className="w-44 h-12 rounded-3xl flex items-center justify-center relative mt-4">Sign Up
+                        className="w-44 h-12 rounded-3xl flex items-center justify-center hover:opacity-95 disabled:opacity-80 transition-all ease-in-out relative mt-4">{loading ? "Loading..." : "Sign up"}
                         <span
                             className="w-6 h-6 bg-slate-900/70 rounded-full flex items-center justify-center absolute right-3">
                             <ArrowRight className="w-4 h-4"/>
