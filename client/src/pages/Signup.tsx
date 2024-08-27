@@ -1,12 +1,13 @@
 import {Button} from "@/components/ui/button";
 import {ArrowLeft, ArrowRight} from "lucide-react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import Lottie from "lottie-react"
 import { Arrow, House } from "../assets/index"
 import { FormEvent, useState } from "react";
 
 
 export default function Signup() {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -55,11 +56,12 @@ export default function Signup() {
                 setError(data.message)
             }else{
                 setError(null)
+                navigate("/")
                 setFormData({ username: "", email: "", password: "" });
             }
             
         } catch (err) {
-            const errorMessage = (err as Error).message;
+            const errorMessage = "username or email already exist... please try again" || (err as Error).message;
             setError(errorMessage);
         } finally {
             setLoading(false);
