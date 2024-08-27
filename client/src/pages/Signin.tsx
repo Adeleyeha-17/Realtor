@@ -4,6 +4,9 @@ import {Link, useNavigate} from "react-router-dom";
 import Lottie from "lottie-react"
 import { Arrow, House } from "../assets/index"
 import { FormEvent, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { signInStart, signInSuccess, signInFailure } from "@/redux/user/userSlice";
+import { RootState } from "../redux/store";
 
 export default function Signin() {
   const navigate = useNavigate()
@@ -11,8 +14,8 @@ export default function Signin() {
     email: "",
     password: ""
 })
-const [ error, setError ] = useState<string | null>(null)
-const [ loading, setLoading ] = useState(false)
+const { loading, error } = useSelector((state: RootState) => state.user)
+const dispatch = useDispatch()
 
 const { email, password } = formData 
 
@@ -27,43 +30,32 @@ const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
 }
 
 const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!email || !password) {
-        setError("Please fill out all fields.");
-        return;
+  if (!email || !password) {
+    dispatch(signInFailure("Please fill out all fields."));
+    return;
+}
+  try {
+    dispatch(signInStart());
+    const res = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    if (data.success === false) {
+      dispatch(signInFailure(data.message));
+      return;
     }
-    
-    try {
-        setLoading(true)
-        setError(null)
-
-        const res = await fetch('/api/auth/signin', 
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            }
-        )
-
-        const data = await res.json()
-
-        if(data.error) {
-            setError(data.message)
-        }else{
-            setError(null)
-            navigate("/")
-            setFormData({ email: "", password: "" });  
-        }
-        
-    } catch (err) {
-        const errorMessage = "email or password is incorrect... please try again" || (err as Error).message;
-        setError(errorMessage);
-    } finally {
-        setLoading(false);
-    }
+    dispatch(signInSuccess(data));
+    navigate('/');
+  } catch (error) {
+    const err = error as Error
+    dispatch(signInFailure(err.message));
+  }
 };
 
 return (

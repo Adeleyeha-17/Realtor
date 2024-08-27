@@ -27,7 +27,7 @@ export default function Signup() {
             }
         })
     }
-    
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -37,34 +37,28 @@ export default function Signup() {
         }
         
         try {
-            setLoading(true)
-            setError(null)
-
-            const res = await fetch('/api/auth/signup', 
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                }
-            )
-
-            const data = await res.json()
-
-            if(data.error) {
-                setError(data.message)
-            }else{
-                setError(null)
-                navigate("/")
-                setFormData({ username: "", email: "", password: "" });
-            }
-            
-        } catch (err) {
-            const errorMessage = "username or email already exist... please try again" || (err as Error).message;
-            setError(errorMessage);
-        } finally {
+          setLoading(true);
+          const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+          const data = await res.json();
+          console.log(data);
+          if (data.success === false) {
             setLoading(false);
+            setError(data.message);
+            return;
+          }
+          setLoading(false);
+          setError(null);
+          navigate('/sign-in');
+        } catch (error) {
+            const err = error as Error
+          setLoading(false);
+          setError(err.message);
         }
     };
 
